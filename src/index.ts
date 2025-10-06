@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: ["https://s3demo.vercel.app" ,"https://ledger-six-sigma.vercel.app/"],
+    origin: ["https://s3demo.vercel.app" ,"https://ledger-six-sigma.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
 }));
