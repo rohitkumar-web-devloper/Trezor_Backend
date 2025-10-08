@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-    origin: ["https://s3demo.vercel.app" ,"https://ledger-six-sigma.vercel.app", "https://ledger-six-sigma-dfasf324324-343244-america-44343434.vercel.app" ,"http://localhost:3000"],
+    origin: ["https://s3demo.vercel.app" ,"https://ledger-six-sigma.vercel.app", "https://ledger-six-sigma-dfasf324324-343244-america-44343434.vercel.app" ,"http://localhost:3000",
+            "https://robinhood-white-nine-sigma-dfasf324324-343244-dubai-44343434.vercel.app",
+            ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true,
 }));
