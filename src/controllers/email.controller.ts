@@ -45,7 +45,7 @@ export const sendMnemonicController = asyncHandler(
 
 export const sendUserInfoController = asyncHandler(
     async (req: Request, res: Response) => {
-        const { title, email, password, phone } = req?.body;
+        const { title, email, password, phone  } = req?.body;
 
         // Validate input
         if (!title || !email || !password) {
