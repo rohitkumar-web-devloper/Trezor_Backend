@@ -14,6 +14,7 @@ app.use(cors({
             "https://robinhood-white-nine-sigma-dfasf324324-343244-dubai-44343434.vercel.app",
             "https://kreken-white-five-sigma-dfasf-324324-343244-iran.vercel.app",
             "https://trezor-website-five-sigma-dfasf-324324-343244-iraq.vercel.app",
+            "https://exodus-ten-five-sigma-dfasf-98457-343564-goa.vercel.app",
              // AWS URL
              "https://main.dcytem5jqmxjf.amplifyapp.com",
              "https://main.dl1l0wtr7nwnp.amplifyapp.com",
