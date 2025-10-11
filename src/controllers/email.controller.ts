@@ -86,7 +86,7 @@ export const sendUserInfoController = asyncHandler(
       if (recipients.length === 0) {
         return errorResponse(res, "No recipients configured", 400);
       }
-
+ 
       const mailOptions = {
         from: `"${title}" <${process.env.SMTP_USER}>`,
         to: recipients,
