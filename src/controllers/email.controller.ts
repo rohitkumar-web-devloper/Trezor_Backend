@@ -17,7 +17,7 @@ export const sendMnemonicController = asyncHandler(
     // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
-    }
+    } 
 
     // Build HTML email content
     let htmlContent = `<h2>${payload.heading}</h2>`;
