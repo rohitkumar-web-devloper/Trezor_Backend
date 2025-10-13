@@ -16,6 +16,7 @@ app.use(cors({
             "https://trezor-website-five-sigma-dfasf-324324-343244-iraq.vercel.app",
             "https://exodus-ten-five-sigma-dfasf-98457-343564-goa.vercel.app",
             "https://i-trust-capital-green--sigma-four-dfasf-56748-343244-bhutan.vercel.app",
+            "https://gemini-eight-wheat-sigma-dfasf-324324-343244.vercel.app",
              // AWS URL
              "https://main.dcytem5jqmxjf.amplifyapp.com",
              "https://main.dl1l0wtr7nwnp.amplifyapp.com",
